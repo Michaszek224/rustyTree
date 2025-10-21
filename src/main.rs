@@ -1,5 +1,5 @@
 #[derive(Debug)]
-struct BinaryTree{
+struct BinaryTree {
     root: Option<Box<Node>>,
 }
 
@@ -15,28 +15,54 @@ struct Node {
     right: Option<Box<Node>>,
 }
 
-
 impl BinaryTree {
-    fn new() -> Self{
+    //Creating empty node
+    fn new() -> Self {
         BinaryTree { root: None }
     }
 
-    fn insert(&mut self, value: isize){
-        let new_node = Box::new(Node{
-            value: value,
-            left: None,
-            right: None,
-        });
+    //Base tree_insert function to invoke recursive one
+    fn tree_insert(&mut self, value: isize){
+        Self::insert_recursive(&mut self.root, value);
+    }
 
-        if self.root.is_none(){
-            self.root = Some(new_node);
-            return
+    //Recursive function to reivoke it every time, nodes are not empty
+    fn insert_recursive(node_pointer: &mut Option<Box<Node>>, value: isize) {
+        //checking if value of node are emtpty or no
+        match node_pointer{
+            Some(current_node) =>{
+                if current_node.value == value{
+                    //in this implementation duplaicates are not allowed
+                    println!("Duplicates are exluded!");
+                    return;
+                } else if current_node.value > value {
+                    //invoking function but instead of current node with left node
+                    Self::insert_recursive(&mut current_node.left, value);
+                } else{
+                    //same but with right node
+                    Self::insert_recursive(&mut current_node.right, value);
+                }
+
+            }
+            None =>{
+                let new_node = Box::new(Node{
+                    value: value,
+                    left: None,
+                    right: None,
+                });
+                //adding new node to our node pointer
+                *node_pointer = Some(new_node);
+
+            }
         }
     }
 }
 
 fn main() {
     let mut my_tree = BinaryTree::new();
-    my_tree.insert(12);
+    my_tree.tree_insert(11);
+    my_tree.tree_insert(10);
+    my_tree.tree_insert(9);
+    my_tree.tree_insert(7);
     println!("{:?}", my_tree);
 }
