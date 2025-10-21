@@ -91,6 +91,34 @@ impl BinaryTree {
         }
         // vecdeque is queue in input on back and ouput on front
         let mut queue = VecDeque::new();
+
+        queue.push_back(&self.root);
+        loop {
+            if queue.len() == 0 {
+                break;
+            }
+            for _ in 0..queue.len() {
+                if let Some(Some(node)) = queue.pop_front() {
+                    print!("{} ", node.value);
+                    if !node.left.is_none() {
+                        queue.push_back(&node.left);
+                    }
+                    if !node.right.is_none() {
+                        queue.push_back(&node.right);
+                    }
+                }
+            }
+            println!();
+        }
+    }
+    fn show_pretty(&self) {
+        // change this to loop for every value not only in queue for each level, add none to vector and then print all tree with nones and not
+        if self.root.is_none() {
+            println!("Empty tree");
+            return;
+        }
+        // vecdeque is queue in input on back and ouput on front
+        let mut queue = VecDeque::new();
         let mut node_values: VecDeque<isize> = VecDeque::new();
         let mut node_positions: VecDeque<usize> = VecDeque::new();
         //must be float to calcualte log2
@@ -125,7 +153,7 @@ impl BinaryTree {
         println!("----");
         println!("tree height: {}", tree_height_u32);
         println!("n of fields: {}", number_of_fields);
-        
+
         // while !node_values.is_empty() {
         //     println!("{:?}", node_values.pop_front().unwrap());
         // }
