@@ -1,3 +1,5 @@
+use std::collections::{VecDeque, vec_deque};
+
 #[derive(Debug)]
 struct BinaryTree {
     root: Option<Box<Node>>,
@@ -81,6 +83,53 @@ impl BinaryTree {
         }
         println!()
     }
+
+    fn show_by_rows(&self) {
+        if self.root.is_none() {
+            println!("Empty tree");
+            return;
+        }
+        // vecdeque is queue in input on back and ouput on front
+        let mut queue = VecDeque::new();
+        let mut node_values: VecDeque<isize> = VecDeque::new();
+        let mut node_positions: VecDeque<usize> = VecDeque::new();
+        //must be float to calcualte log2
+        let mut node_counter: f64 = 0.0;
+
+        queue.push_back(&self.root);
+        loop {
+            if queue.len() == 0 {
+                break;
+            }
+            for _ in 0..queue.len() {
+                if let Some(Some(node)) = queue.pop_front() {
+                    print!("{} ", node.value);
+                    node_values.push_back(node.value);
+                    if !node.left.is_none() {
+                        queue.push_back(&node.left);
+                    }
+                    if !node.right.is_none() {
+                        queue.push_back(&node.right);
+                    }
+                }
+                node_counter += 1.0;
+            }
+            println!();
+        }
+
+        let tree_height = node_counter.log2() + 1.0;
+        let tree_height_u32 = tree_height.floor() as u32;
+        // let tree_height_u32 = tree_height.ceil() as u32;
+        let number_of_fields = 2usize.pow(tree_height_u32) - 1;
+
+        println!("----");
+        println!("tree height: {}", tree_height_u32);
+        println!("n of fields: {}", number_of_fields);
+        
+        // while !node_values.is_empty() {
+        //     println!("{:?}", node_values.pop_front().unwrap());
+        // }
+    }
 }
 
 fn main() {
@@ -93,5 +142,10 @@ fn main() {
     my_tree.tree_insert(14);
     my_tree.tree_insert(18);
     my_tree.tree_insert(3);
-    my_tree.show_left_first();
+    my_tree.tree_insert(8);
+    my_tree.tree_insert(1);
+    my_tree.tree_insert(100);
+
+    // my_tree.show_left_first();
+    my_tree.show_by_rows();
 }
