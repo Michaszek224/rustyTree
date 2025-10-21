@@ -55,40 +55,43 @@ impl BinaryTree {
         }
     }
 
-    fn show(&self) {
-        let mut stack = vec![&self.root];
+    fn show_left_first(&self) {
+        let mut node_stack = vec![&self.root];
         loop {
-            if stack.len() == 0 {
-                return;
+            if node_stack.len() == 0 {
+                break;
             }
-            let link = stack[stack.len() - 1];
+            let link = node_stack[node_stack.len() - 1];
             match link {
                 Some(current_node) => {
-                    println!("{}", current_node.value);
-                    stack.pop();
-                    if !current_node.left.is_none() {
-                        stack.push(&current_node.left);
-                    }
+                    print!("-{}-", current_node.value);
+                    node_stack.pop();
                     if !current_node.right.is_none() {
-                        stack.push(&current_node.right);
+                        node_stack.push(&current_node.right);
+                    }
+                    if !current_node.left.is_none() {
+                        node_stack.push(&current_node.left);
                     }
                 }
                 None => {
                     //condition if tree is empty, otherwise would be inifite loop
-                    stack.pop();
+                    node_stack.pop();
                 }
             }
         }
+        println!()
     }
 }
 
 fn main() {
     let mut my_tree = BinaryTree::new();
     my_tree.tree_insert(11);
-    my_tree.tree_insert(10);
     my_tree.tree_insert(9);
+    my_tree.tree_insert(15);
     my_tree.tree_insert(7);
-    my_tree.tree_insert(12);
-    // println!("{:?}", my_tree);
-    my_tree.show();
+    my_tree.tree_insert(10);
+    my_tree.tree_insert(14);
+    my_tree.tree_insert(18);
+    my_tree.tree_insert(3);
+    my_tree.show_left_first();
 }
