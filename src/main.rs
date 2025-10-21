@@ -22,37 +22,61 @@ impl BinaryTree {
     }
 
     //Base tree_insert function to invoke recursive one
-    fn tree_insert(&mut self, value: isize){
+    fn tree_insert(&mut self, value: isize) {
         Self::insert_recursive(&mut self.root, value);
     }
 
     //Recursive function to reivoke it every time, nodes are not empty
     fn insert_recursive(node_pointer: &mut Option<Box<Node>>, value: isize) {
         //checking if value of node are emtpty or no
-        match node_pointer{
-            Some(current_node) =>{
-                if current_node.value == value{
+        match node_pointer {
+            Some(current_node) => {
+                if current_node.value == value {
                     //in this implementation duplaicates are not allowed
                     println!("Duplicates are exluded!");
                     return;
                 } else if current_node.value > value {
                     //invoking function but instead of current node with left node
                     Self::insert_recursive(&mut current_node.left, value);
-                } else{
+                } else {
                     //same but with right node
                     Self::insert_recursive(&mut current_node.right, value);
                 }
-
             }
-            None =>{
-                let new_node = Box::new(Node{
+            None => {
+                let new_node = Box::new(Node {
                     value: value,
                     left: None,
                     right: None,
                 });
                 //adding new node to our node pointer
                 *node_pointer = Some(new_node);
+            }
+        }
+    }
 
+    fn show(&self) {
+        let mut stack = vec![&self.root];
+        loop {
+            if stack.len() == 0 {
+                return;
+            }
+            let link = stack[stack.len() - 1];
+            match link {
+                Some(current_node) => {
+                    println!("{}", current_node.value);
+                    stack.pop();
+                    if !current_node.left.is_none() {
+                        stack.push(&current_node.left);
+                    }
+                    if !current_node.right.is_none() {
+                        stack.push(&current_node.right);
+                    }
+                }
+                None => {
+                    //condition if tree is empty, otherwise would be inifite loop
+                    stack.pop();
+                }
             }
         }
     }
@@ -64,5 +88,7 @@ fn main() {
     my_tree.tree_insert(10);
     my_tree.tree_insert(9);
     my_tree.tree_insert(7);
-    println!("{:?}", my_tree);
+    my_tree.tree_insert(12);
+    // println!("{:?}", my_tree);
+    my_tree.show();
 }
