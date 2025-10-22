@@ -1,11 +1,17 @@
-use std::collections::{VecDeque, vec_deque};
+use std::{
+    collections::VecDeque,
+    env::{self},
+    fs, io,
+};
 
-#[derive(Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
 struct BinaryTree {
     root: Option<Box<Node>>,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Deserialize)]
 struct Node {
     /*Comment for future me:
     Box is for putting Node to heap to resolve infitie space problem
@@ -57,66 +63,60 @@ impl BinaryTree {
         }
     }
 
-    fn insert_many(&mut self, values: Vec<isize>){
-        for value in values {
-            Self::insert_recursive(&mut self.root, value);
-        }
-    }
+    // fn show_left_first(&self) {
+    //     let mut node_stack = vec![&self.root];
+    //     loop {
+    //         if node_stack.len() == 0 {
+    //             break;
+    //         }
+    //         let link = node_stack[node_stack.len() - 1];
+    //         match link {
+    //             Some(current_node) => {
+    //                 print!("-{}-", current_node.value);
+    //                 node_stack.pop();
+    //                 if !current_node.right.is_none() {
+    //                     node_stack.push(&current_node.right);
+    //                 }
+    //                 if !current_node.left.is_none() {
+    //                     node_stack.push(&current_node.left);
+    //                 }
+    //             }
+    //             None => {
+    //                 //condition if tree is empty, otherwise would be inifite loop
+    //                 node_stack.pop();
+    //             }
+    //         }
+    //     }
+    //     println!()
+    // }
 
-    fn show_left_first(&self) {
-        let mut node_stack = vec![&self.root];
-        loop {
-            if node_stack.len() == 0 {
-                break;
-            }
-            let link = node_stack[node_stack.len() - 1];
-            match link {
-                Some(current_node) => {
-                    print!("-{}-", current_node.value);
-                    node_stack.pop();
-                    if !current_node.right.is_none() {
-                        node_stack.push(&current_node.right);
-                    }
-                    if !current_node.left.is_none() {
-                        node_stack.push(&current_node.left);
-                    }
-                }
-                None => {
-                    //condition if tree is empty, otherwise would be inifite loop
-                    node_stack.pop();
-                }
-            }
-        }
-        println!()
-    }
+    // fn show_by_rows(&self) {
+    //     if self.root.is_none() {
+    //         println!("Empty tree");
+    //         return;
+    //     }
+    //     // vecdeque is queue in input on back and ouput on front
+    //     let mut queue = VecDeque::new();
 
-    fn show_by_rows(&self) {
-        if self.root.is_none() {
-            println!("Empty tree");
-            return;
-        }
-        // vecdeque is queue in input on back and ouput on front
-        let mut queue = VecDeque::new();
-
-        queue.push_back(&self.root);
-        loop {
-            if queue.len() == 0 {
-                break;
-            }
-            for _ in 0..queue.len() {
-                if let Some(Some(node)) = queue.pop_front() {
-                    print!("{} ", node.value);
-                    if !node.left.is_none() {
-                        queue.push_back(&node.left);
-                    }
-                    if !node.right.is_none() {
-                        queue.push_back(&node.right);
-                    }
-                }
-            }
-            println!();
-        }
-    }
+    //     queue.push_back(&self.root);
+    //     loop {
+    //         if queue.len() == 0 {
+    //             break;
+    //         }
+    //         for _ in 0..queue.len() {
+    //             if let Some(Some(node)) = queue.pop_front() {
+    //                 print!("{} ", node.value);
+    //                 if !node.left.is_none() {
+    //                     queue.push_back(&node.left);
+    //                 }
+    //                 if !node.right.is_none() {
+    //                     queue.push_back(&node.right);
+    //                 }
+    //             }
+    //         }
+    //         println!();
+    //     }
+    // }
 
     fn show_pretty(&self) {
         // change this to loop for every value not only in queue for each level, add none to vector and then print all tree with nones and not
@@ -198,28 +198,89 @@ impl BinaryTree {
         }
         println!();
     }
+
+    fn save_to_file(&self, filename: &str) -> io::Result<()> {
+        let json = serde_json::to_string_pretty(self)?;
+        fs::write(filename, json)?;
+        Ok(())
+    }
+
+    fn load_from_file(filename: &str) -> io::Result<Self> {
+        let json = fs::read_to_string(filename)?;
+        let tree = serde_json::from_str(&json)?;
+        Ok(tree)
+    }
 }
 
 fn main() {
-    let mut my_tree = BinaryTree::new();
-    my_tree.tree_insert(11);
-    my_tree.tree_insert(9);
-    my_tree.tree_insert(15);
-    my_tree.tree_insert(7);
-    my_tree.tree_insert(10);
-    my_tree.tree_insert(14);
-    my_tree.tree_insert(18);
-    my_tree.tree_insert(3);
-    my_tree.tree_insert(8);
-    my_tree.tree_insert(1);
-    my_tree.tree_insert(100);
-    my_tree.tree_insert(180);
+    let tree_file = "tree.json";
+    let mut my_tree = BinaryTree::load_from_file(tree_file).unwrap_or_else(|_| BinaryTree::new());
 
-    // my_tree.show_left_first();
-    my_tree.show_pretty();
+    let args: Vec<String> = env::args().collect();
+    if args.len() == 1 {
+        println!("Use command:");
+        println!("./tree <option>");
+        println!("Use './tree help' to get all options");
+        return;
+    }
 
-    let mut my_tree2 = BinaryTree::new();
-    let values_to_insert_test = vec![11,9,15,7,10,14,18,3,8,1,100,180];
-    my_tree2.insert_many(values_to_insert_test);
-    my_tree2.show_pretty();
+    match args[1].as_str() {
+        "help" => {
+            println!("'./tree new' to add new tree (clear already existing one)");
+            println!("'./tree add <values...>' to insert value or values to tree");
+            println!("'./tree show' to display tree");
+            println!("'./tree clear' to clear current tree");
+            return;
+        }
+        "new" => {
+            my_tree = BinaryTree::new();
+            println!("New tree created!")
+        }
+        "add" => {
+            let mut count = 0;
+            if args.len() < 3 {
+                println!("'./tree add <values...>' to insert value or values to the tree");
+                return;
+            }
+            for value_str in &args[2..] {
+                match value_str.parse::<isize>() {
+                    Ok(value) => {
+                        count += 1;
+                        my_tree.tree_insert(value);
+                    }
+                    Err(_) => {
+                        eprintln!("Error: {} is not a valid number", value_str);
+                    }
+                }
+            }
+            println!("Added {} numbers", count);
+        }
+        "show" => {
+            if args.len() != 2 {
+                println!("'./tree show' to display tree");
+                return;
+            }
+            my_tree.show_pretty()
+        }
+
+        "clear" => {
+            if let Err(e) = fs::remove_file(tree_file){
+                eprintln!("Error clearning file: {}", e);
+            } else{
+                println!("Tree cleaned");
+            }
+            return;
+        }
+        _ => {
+            println!("Wrong option!");
+            println!("Use command:");
+            println!("./tree <option>");
+            println!("Use './tree help' to get all options");
+        }
+    }
+    if let Err(e) = my_tree.save_to_file(tree_file){
+        eprintln!("Error saving tree to file: {}", e);
+    } else{
+        // println!("Tree saved!");
+    }
 }
