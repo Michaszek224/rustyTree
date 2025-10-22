@@ -118,45 +118,78 @@ impl BinaryTree {
             return;
         }
         // vecdeque is queue in input on back and ouput on front
-        let mut queue = VecDeque::new();
-        let mut node_values: VecDeque<isize> = VecDeque::new();
-        let mut node_positions: VecDeque<usize> = VecDeque::new();
+        let mut queue: VecDeque<Option<&Box<Node>>> = VecDeque::new();
+        let mut node_values = VecDeque::new();
         //must be float to calcualte log2
         let mut node_counter: f64 = 0.0;
+        let mut level_size = 1;
 
-        queue.push_back(&self.root);
+        queue.push_back(self.root.as_ref());
         loop {
             if queue.len() == 0 {
                 break;
             }
-            for _ in 0..queue.len() {
-                if let Some(Some(node)) = queue.pop_front() {
-                    print!("{} ", node.value);
-                    node_values.push_back(node.value);
-                    if !node.left.is_none() {
-                        queue.push_back(&node.left);
-                    }
-                    if !node.right.is_none() {
-                        queue.push_back(&node.right);
+
+            let mut next_level_check_not_none_only = false;
+            for _ in 0..level_size {
+                if let Some(option_node) = queue.pop_front() {
+                    match option_node {
+                        Some(node) => {
+                            node_values.push_back(Some(node.value));
+                            queue.push_back(node.left.as_ref());
+                            queue.push_back(node.right.as_ref());
+                            if !node.left.is_none() || !node.right.is_none() {
+                                next_level_check_not_none_only = true;
+                            }
+                        }
+                        None => {
+                            node_values.push_back(None);
+                            queue.push_back(None);
+                            queue.push_back(None);
+                        }
                     }
                 }
                 node_counter += 1.0;
             }
-            println!();
+            level_size *= 2;
+            if !next_level_check_not_none_only {
+                break;
+            }
         }
 
         let tree_height = node_counter.log2() + 1.0;
         let tree_height_u32 = tree_height.floor() as u32;
-        // let tree_height_u32 = tree_height.ceil() as u32;
-        let number_of_fields = 2usize.pow(tree_height_u32) - 1;
 
-        println!("----");
-        println!("tree height: {}", tree_height_u32);
-        println!("n of fields: {}", number_of_fields);
+        println!();
+        let mut values_index = 0;
+        for level in 0..tree_height_u32 {
+            let nodes_at_level = 2usize.pow(level);
+            let spacing_between = 2usize.pow(tree_height_u32 - level) - 1;
+            let leading_spaces = 2usize.pow(tree_height_u32 - level - 1) - 1;
 
-        // while !node_values.is_empty() {
-        //     println!("{:?}", node_values.pop_front().unwrap());
-        // }
+            for _ in 0..leading_spaces {
+                print!(" ");
+            }
+
+            for i in 0..nodes_at_level {
+                if values_index < node_values.len() {
+                    if let Some(val) = node_values[values_index] {
+                        print!("{}", val);
+                    } else {
+                        print!("N");
+                    }
+                    values_index += 1;
+                }
+
+                if i < nodes_at_level - 1 {
+                    for _ in 0..spacing_between {
+                        print!(" ");
+                    }
+                }
+            }
+            println!();
+        }
+        println!();
     }
 }
 
@@ -173,7 +206,8 @@ fn main() {
     my_tree.tree_insert(8);
     my_tree.tree_insert(1);
     my_tree.tree_insert(100);
+    my_tree.tree_insert(180);
 
     // my_tree.show_left_first();
-    my_tree.show_by_rows();
+    my_tree.show_pretty();
 }
