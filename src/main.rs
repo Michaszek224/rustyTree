@@ -57,6 +57,12 @@ impl BinaryTree {
         }
     }
 
+    fn insert_many(&mut self, values: Vec<isize>){
+        for value in values {
+            Self::insert_recursive(&mut self.root, value);
+        }
+    }
+
     fn show_left_first(&self) {
         let mut node_stack = vec![&self.root];
         loop {
@@ -111,6 +117,7 @@ impl BinaryTree {
             println!();
         }
     }
+
     fn show_pretty(&self) {
         // change this to loop for every value not only in queue for each level, add none to vector and then print all tree with nones and not
         if self.root.is_none() {
@@ -210,4 +217,9 @@ fn main() {
 
     // my_tree.show_left_first();
     my_tree.show_pretty();
+
+    let mut my_tree2 = BinaryTree::new();
+    let values_to_insert_test = vec![11,9,15,7,10,14,18,3,8,1,100,180];
+    my_tree2.insert_many(values_to_insert_test);
+    my_tree2.show_pretty();
 }
